@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Feb 27 01:45:42 2018
+
+@author: krechnitz
+"""
+from hepatitis_projection import *
+from hepatitis_matrix import *
+import numpy as np
+from scipy import stats
+from scipy import spatial
+from mpl_toolkits.mplot3d import Axes3D
+import pandas as pd
+import matplotlib.pyplot as plt
+
+attributeNames = ['Age','Sex','Steroid','Antivirals','Fatigue','Malaise',
+                  'Anorexia','Liver Big','Liver Firm','Spleen Palpable','Spiders',
+                  'Ascites','Varices','Bilirubin','Alk Phosphate','Sgot','Albumin',
+                  'Protime','Histology']
+binary = [2,3,4,5,6,7,8,9,10,11,12,18]
+
+#calculates a matrix of all the people who died with the attribute
+binaryMatrix = (X[:,binary] == 2)
+deathInfo = np.mat(np.empty((80, 12)))
+for d in range(12):
+    intermediate = binaryMatrix[:,d]&np.asmatrix(np.logical_not(class_mask)).T 
+    deathInfo[:,d] = intermediate
+
+total = 0
+totalArray = [None]*12
+
+#total the death count for each binary attribute
+array = -1
+for column in range(12):
+    array += 1
+    total = 0
+    for row in range(80):
+        total += deathInfo[row,column]
+        totalArray[array] = total
+
+#total the entire death count
+totalDeath = 0
+for i in range(80):
+    if(class_mask[i] == False):
+        totalDeath += 1
+
+#calculate array of total number of people with each attribute        
+totalInflicted = [None]*12
+index = -1
+for j in range(12):
+    attributeTotal = 0
+    index += 1
+    for k in range(80):
+        if(binaryMatrix[k,j] == True):
+            attributeTotal += 1
+        if(k == 79):
+            totalInflicted[index] = attributeTotal
+
+#percentage of people who have the attribute and died
+percentageDead = [None]*12
+for p in range(12):
+    percentageDead[p] = totalArray[p]/totalInflicted[p]
+fig, ax = mp.pyplot.subplots()
+ind = np.arange(1,13)
+mp.pyplot.show(block=False)
+mp.pyplot.bar(ind,percentageDead)
+ax.set_title('Percentage of Dead Patients with Attribute')
+
+        
+        
